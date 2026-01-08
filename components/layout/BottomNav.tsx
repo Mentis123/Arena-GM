@@ -8,15 +8,15 @@ import {
   Users,
   Calendar,
   Gift,
-  BookOpen,
+  Dices,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/session', label: 'Session', icon: Play },
+  { href: '/roll', label: 'Roll', icon: Dices },
   { href: '/players', label: 'Players', icon: Users },
   { href: '/events', label: 'Events', icon: Calendar },
   { href: '/loot', label: 'Loot', icon: Gift },
-  { href: '/rules', label: 'Rules', icon: BookOpen },
 ]
 
 export function BottomNav() {

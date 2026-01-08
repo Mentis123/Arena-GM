@@ -18,6 +18,7 @@ import type {
 import { createSession, CURRENT_SCHEMA_VERSION } from '../utils/session'
 import { dexieStorage } from '../db'
 import { nanoid } from 'nanoid'
+import { syncSessionToCloud } from '../sync'
 
 interface SessionState {
   session: Session | null
@@ -425,8 +426,21 @@ export const useSessionStore = create<SessionState>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.setHydrated(true)
+          // Sync to cloud on rehydration
+          if (state.session) {
+            syncSessionToCloud(state.session)
+          }
         }
       },
     }
   )
+)
+
+// Subscribe to session changes and sync to cloud
+useSessionStore.subscribe(
+  (state) => {
+    if (state.isHydrated && state.session) {
+      syncSessionToCloud(state.session)
+    }
+  }
 )
