@@ -1,29 +1,71 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSessionStore } from '@/lib/stores/sessionStore'
-import { useHydration } from '@/lib/hooks/useHydration'
+import { useEffect, useState, useCallback } from 'react'
 import { cn } from '@/lib/utils/cn'
-import { Trophy, Swords, RefreshCw } from 'lucide-react'
+import { Trophy, Swords, RefreshCw, WifiOff } from 'lucide-react'
+import type { Session } from '@/lib/types'
 
 export default function PlayerViewPage() {
-  const isHydrated = useHydration()
-  const session = useSessionStore((state) => state.session)
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
 
-  // Auto-refresh every 5 seconds (for future NeonDB integration)
-  useEffect(() => {
-    const interval = setInterval(() => {
+  const fetchSession = useCallback(async () => {
+    try {
+      const res = await fetch('/api/session', {
+        cache: 'no-store',
+      })
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch session')
+      }
+
+      const data = await res.json()
+      setSession(data.session)
+      setError(null)
       setLastUpdate(new Date())
-      // When NeonDB is added, this will trigger a refetch
-    }, 5000)
-    return () => clearInterval(interval)
+    } catch (err) {
+      console.error('Error fetching session:', err)
+      setError('Unable to connect')
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  if (!isHydrated) {
+  // Initial fetch
+  useEffect(() => {
+    fetchSession()
+  }, [fetchSession])
+
+  // Auto-refresh every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(fetchSession, 3000)
+    return () => clearInterval(interval)
+  }, [fetchSession])
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (error && !session) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center">
+        <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
+          <WifiOff className="w-10 h-10 text-red-500" />
+        </div>
+        <h1 className="text-2xl font-bold mb-2">Connection Error</h1>
+        <p className="text-muted-foreground mb-4">{error}</p>
+        <button
+          onClick={fetchSession}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+        >
+          Retry
+        </button>
       </div>
     )
   }
@@ -38,7 +80,11 @@ export default function PlayerViewPage() {
         <p className="text-muted-foreground">
           Waiting for the GM to start a session...
         </p>
-        <p className="text-xs text-muted-foreground mt-4">
+        <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground">
+          <RefreshCw className="w-3 h-3 animate-spin" />
+          <span>Checking for updates...</span>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">
           Last checked: {lastUpdate.toLocaleTimeString()}
         </p>
       </div>
@@ -69,8 +115,8 @@ export default function PlayerViewPage() {
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <RefreshCw className="w-3 h-3" />
-            <span>Live</span>
+            <RefreshCw className={cn('w-3 h-3', loading && 'animate-spin')} />
+            <span>{error ? 'Reconnecting...' : 'Live'}</span>
           </div>
         </div>
       </header>
