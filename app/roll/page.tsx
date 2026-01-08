@@ -92,6 +92,23 @@ export default function RollPage() {
           )}
         </div>
 
+        {/* Roll Button */}
+        <button
+          onClick={handleRoll}
+          disabled={isRolling}
+          className={cn(
+            'w-full h-16 rounded-xl',
+            'bg-primary text-primary-foreground',
+            'font-bold text-xl',
+            'tap-target touch-manipulation',
+            'hover:bg-primary/90 active:bg-primary/80',
+            'disabled:opacity-50',
+            'transition-colors'
+          )}
+        >
+          {isRolling ? 'Rolling...' : `Roll ${selectedDie}`}
+        </button>
+
         {/* Dice Selector */}
         <div className="bg-card rounded-xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-3">
@@ -237,23 +254,6 @@ export default function RollPage() {
             </button>
           </div>
         </div>
-
-        {/* Roll Button */}
-        <button
-          onClick={handleRoll}
-          disabled={isRolling}
-          className={cn(
-            'w-full h-16 rounded-xl',
-            'bg-primary text-primary-foreground',
-            'font-bold text-xl',
-            'tap-target touch-manipulation',
-            'hover:bg-primary/90 active:bg-primary/80',
-            'disabled:opacity-50',
-            'transition-colors'
-          )}
-        >
-          {isRolling ? 'Rolling...' : `Roll ${selectedDie}`}
-        </button>
 
         {/* Roll History */}
         <div className="bg-card rounded-xl border border-border overflow-hidden">
