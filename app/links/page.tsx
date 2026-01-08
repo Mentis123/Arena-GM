@@ -148,7 +148,14 @@ function CopyableLink({ item }: { item: LinkItem }) {
       <div className="flex-1 min-w-0">
         <div className="font-medium text-sm">{item.label}</div>
         <div className="text-xs text-muted-foreground truncate">{item.description}</div>
-        <div className="text-xs text-primary font-mono mt-0.5 truncate">{fullUrl}</div>
+        <a
+          href={`https://${fullUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-primary font-mono mt-0.5 truncate block hover:underline"
+        >
+          {fullUrl}
+        </a>
       </div>
       <button
         onClick={handleCopy}
